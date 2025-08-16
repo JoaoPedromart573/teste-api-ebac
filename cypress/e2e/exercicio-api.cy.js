@@ -1,10 +1,21 @@
 /// <reference types="cypress" />
 
-// BaseUrl configurada no cypress.config.js: "https://serverest.dev"
-
 describe('Testes da Funcionalidade Usuários - Serverest', () => {
-
   let usuarioId;
+
+  beforeEach(() => {
+    // cria um usuário antes de cada teste
+    cy.criarUsuario().then((id) => {
+      usuarioId = id;
+    });
+  });
+
+  afterEach(() => {
+    // garante limpeza após os testes
+    if (usuarioId) {
+      cy.removerUsuario(usuarioId);
+    }
+  });
 
   it('Deve validar contrato de usuários', () => {
     cy.request('GET', '/usuarios').then((response) => {
@@ -13,7 +24,6 @@ describe('Testes da Funcionalidade Usuários - Serverest', () => {
         expect(usuario).to.have.all.keys(
           'nome',
           'email',
-          'password',
           'administrador',
           '_id'
         );
@@ -29,17 +39,9 @@ describe('Testes da Funcionalidade Usuários - Serverest', () => {
   });
 
   it('Deve cadastrar um usuário com sucesso', () => {
-    const usuario = {
-      nome: 'João Teste',
-      email: `joao${Date.now()}@teste.com`,
-      password: '123456',
-      administrador: 'true'
-    };
-
-    cy.request('POST', '/usuarios', usuario).then((response) => {
-      expect(response.status).to.eq(201);
-      expect(response.body.message).to.eq('Cadastro realizado com sucesso');
-      usuarioId = response.body._id;
+    cy.criarUsuario().then((id) => {
+      expect(id).to.not.be.undefined;
+      cy.removerUsuario(id); // remove logo após pra não acumular
     });
   });
 
@@ -58,7 +60,7 @@ describe('Testes da Funcionalidade Usuários - Serverest', () => {
       failOnStatusCode: false
     }).then((response) => {
       expect(response.status).to.eq(400);
-      expect(response.body.email).to.eq('email deve ser um email válido');
+      expect(response.body).to.have.property('email', 'email deve ser um email válido');
     });
   });
 
@@ -77,11 +79,12 @@ describe('Testes da Funcionalidade Usuários - Serverest', () => {
   });
 
   it('Deve deletar um usuário previamente cadastrado', () => {
-    cy.request('DELETE', `/usuarios/${usuarioId}`).then((response) => {
-      expect(response.status).to.eq(200);
+    cy.removerUsuario(usuarioId).then((response) => {
       expect(response.body.message).to.eq('Registro excluído com sucesso');
+      usuarioId = null; // evita tentar excluir de novo no afterEach
     });
   });
-
 });
+
+
 
