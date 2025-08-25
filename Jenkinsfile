@@ -1,8 +1,8 @@
 pipeline {
     agent any
-    
+
     tools {
-        nodejs "nodejs-lts"   
+        nodejs "nodejs-lts"
     }
 
     stages {
@@ -18,22 +18,22 @@ pipeline {
             }
         }
 
-        stage('Testes Web') {
+        stage('Subir Serverest') {
             steps {
-                sh 'npx cypress run --spec "cypress/e2e/web/**/*.cy.js"'
+                sh 'nohup npm run iniciar &'
+                sh 'sleep 5'
             }
         }
 
-        stage('Testes API') {
+        stage('Rodar Testes') {
             steps {
-                sh 'npx cypress run --spec "cypress/e2e/api/**/*.cy.js"'
+                sh 'npm run cy:run'
             }
         }
     }
 
     post {
         always {
-            junit 'cypress/results/*.xml' 
             archiveArtifacts artifacts: 'cypress/screenshots/**/*', allowEmptyArchive: true
             archiveArtifacts artifacts: 'cypress/videos/**/*', allowEmptyArchive: true
         }
