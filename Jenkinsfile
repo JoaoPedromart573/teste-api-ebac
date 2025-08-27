@@ -2,13 +2,14 @@ pipeline {
     agent any
 
     tools {
-        nodejs "nodejs-lts"
+        nodejs "NodeJS"   // Nome da instalação do Node configurada no Jenkins
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/seu-repositorio.git'
+                git branch: 'main',
+                    url: 'https://github.com/seu-usuario/seu-repositorio.git'
             }
         }
 
@@ -18,24 +19,23 @@ pipeline {
             }
         }
 
-        stage('Subir Serverest') {
+        stage('Rodar Testes API') {
             steps {
-                sh 'nohup npm run iniciar &'
-                sh 'sleep 5'
+                sh 'npm run test:api'
             }
         }
 
-        stage('Rodar Testes') {
+        stage('Rodar Testes Web') {
             steps {
-                sh 'npm run cy:run'
+                sh 'npm run test:web'
             }
         }
     }
 
     post {
         always {
-            archiveArtifacts artifacts: 'cypress/screenshots/**/*', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'cypress/videos/**/*', allowEmptyArchive: true
+            junit 'reports/**/*.xml'  // Se estiver usando Mocha + mochawesome ou Jest JUnit
+            archiveArtifacts artifacts: 'reports/**/*.*', allowEmptyArchive: true
         }
     }
 }
