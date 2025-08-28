@@ -1,21 +1,63 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs "NodeJS_18" // Ajuste conforme a configuração do seu Jenkins
+    }
+
     stages {
-        stage('Clonar o repositorio') {
+        stage('Checkout') {
             steps {
-                git branch 'main', url: 'https://github.com/JoaoPedromart573/teste-api-ebac.git'
+                git branch: 'main',
+                    url: 'https://github.com/JoaoPedromart573/teste-api-ebac.git'
             }
         }
-    stage('Instalar dependencias') {
-        steps{
-            sh 'npm install'
+
+        stage('Instalar dependências') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Subir servidor (se aplicável)') {
+            steps {
+                // Caso precise iniciar o servidor antes dos testes
+                sh 'npm start &'
+                // Aguarde garantir que o servidor esteja pronto (ajuste o tempo conforme necessário)
+                sleep time: 5, unit: 'SECONDS'
+            }
+            // Se este passo não for necessário, pode ser removido
+        }
+
+        stage('Executar testes de API via Cypress') {
+            steps {
+                sh 'npx cypress run'
+            }
+        }
+
+        stage('Publicar relatório') {
+            steps {
+                // Publicar relatórios HTML gerados
+                publishHTML([
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'cypress/results',       // Se existir
+                    reportFiles: 'index.html',           // Se houver um HTML
+                    reportName: 'Relatório Testes API'
+                ])
+                // Publicar relatórios JUnit, caso estejam disponíveis
+                junit 'cypress/results/*.xml'
+            }
         }
     }
-    stage('Executtar Teste') {
-        steps {
-            sh 'NO_COLOR=1 npm run cy:run'
+
+    post {
+        always {
+            cleanWs()
+            echo 'Pipeline finalizado.'
         }
     }
- }
 }
+
+
