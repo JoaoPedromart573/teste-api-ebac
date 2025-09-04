@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/seu-usuario/seu-repo-api.git'
+            }
+        }
+
+        stage('Instalar dependências') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Executar testes de API') {
+            steps {
+                sh 'npm test'
+            }
+        }
+
+        stage('Publicar resultados') {
+            steps {
+                junit 'reports/junit/*.xml'
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true
+        }
+    }
+}
