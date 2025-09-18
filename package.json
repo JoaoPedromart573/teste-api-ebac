@@ -1,20 +1,14 @@
 {
-  "name": "teste-api-ebac",
+  "name": "api-tests",
   "version": "1.0.0",
-  "description": "",
+  "description": "Testes automatizados da API com Cypress",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx serverest",
-    "cy:run": "npx cypress run"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "joi": "^17.12.0"
+    "test": "cypress run",
+    "cypress:open": "cypress open"
   },
   "devDependencies": {
-    "cypress": "^14.5.4"
+    "cypress": "^13.6.0",
+    "cypress-mochawesome-reporter": "^3.8.2"
   }
 }

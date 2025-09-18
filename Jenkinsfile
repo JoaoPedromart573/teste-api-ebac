@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'Node16'   // Configure no Jenkins (Global Tool Configuration)
+        nodejs 'Node16'
     }
 
     stages {
@@ -20,14 +20,20 @@ pipeline {
 
         stage('Rodar Testes Cypress') {
             steps {
-                sh 'npx cypress run'
+                sh 'npm test'
             }
         }
     }
 
     post {
         always {
-            junit 'cypress/results/*.xml' // se você configurar reporter JUnit no cypress.config.js
+            publishHTML(target: [
+                allowMissing: false,
+                keepAll: true,
+                reportDir: 'cypress/results',
+                reportFiles: 'mochawesome.html',
+                reportName: 'Relatório Cypress'
+            ])
         }
         success {
             echo '✅ Testes executados com sucesso!'
