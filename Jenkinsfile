@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'Node16'   // Configure no Jenkins (Global Tool Configuration)
+    }
+
     stages {
         stage('Clonar Repositório') {
             steps {
@@ -14,20 +18,22 @@ pipeline {
             }
         }
 
-        stage('Executar Projeto') {
+        stage('Rodar Testes Cypress') {
             steps {
-                sh 'npm start'
+                sh 'npx cypress run'
             }
         }
     }
 
     post {
+        always {
+            junit 'cypress/results/*.xml' // se você configurar reporter JUnit no cypress.config.js
+        }
         success {
-            echo 'Pipeline executado com sucesso 🚀'
+            echo '✅ Testes executados com sucesso!'
         }
         failure {
-            echo 'Pipeline falhou ❌'
+            echo '❌ Testes falharam!'
         }
     }
 }
-
